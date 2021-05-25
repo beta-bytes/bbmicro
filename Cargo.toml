@@ -1,0 +1,9 @@
+[package]
+name = "bbmicro"
+version = "0.1.0"
+authors = ["Beta Bytes"]
+edition = "2018"
+
+[dependencies.sdl2]
+version = "0.34.3"
+features = ["image", "mixer"]
