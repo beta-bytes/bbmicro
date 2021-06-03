@@ -6,6 +6,14 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels;
 use sdl2::rect::Rect;
 
+use serde::Deserialize;
+
+use std::collections::HashMap;
+use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::Path;
+
 /*
 PICO 8 is 128 x 128 pixels
 each tile is 8x8
@@ -114,9 +122,40 @@ pub struct BBMicroApi<'a> {
     canvas: &'a mut sdl2::render::WindowCanvas,
     texture_creator: &'a sdl2::render::TextureCreator<sdl2::video::WindowContext>,
     sprites_texture: sdl2::render::Texture<'a>,
+    font_texture: sdl2::render::Texture<'a>,
+    font_entries: HashMap<char, FontEntry>,
     draw_state: DrawState,
     input_state: InputState,
     map_data: [u8; 256 * 256],
+}
+
+#[derive(Deserialize, Debug)]
+struct FontEntry {
+    top_x: f64,
+    top_y: f64,
+    bottom_x: f64,
+    bottom_y: f64,
+    bottom_offset: f64,
+}
+
+impl FontEntry {
+    fn width(&self) -> f64 {
+        self.bottom_x - self.top_x
+    }
+
+    fn height(&self) -> f64 {
+        self.bottom_y - self.top_y
+    }
+}
+
+fn load_font() -> Result<HashMap<char, FontEntry>, Box<dyn Error>> {
+    let file = File::open("font.json")?;
+    let reader = BufReader::new(file);
+
+    // Read the JSON contents of the file as an instance of `User`.
+    let font_entries: HashMap<char, FontEntry> = serde_json::from_reader(reader)?;
+    // Return the `User`.
+    Ok(font_entries)
 }
 
 impl<'a> BBMicroApi<'a> {
@@ -127,11 +166,18 @@ impl<'a> BBMicroApi<'a> {
         let sprites_texture = texture_creator
             .load_texture("sprites.png")
             .expect("Couldn't load the texture");
+        let font_texture = texture_creator
+            .load_texture("font.png")
+            .expect("Couldn't load the texture");
+
+        let font_entries = load_font().expect("Could not load the font.json");
 
         BBMicroApi {
             canvas: canvas,
             texture_creator: texture_creator,
             sprites_texture: sprites_texture,
+            font_texture: font_texture,
+            font_entries: font_entries,
             draw_state: DrawState {
                 camera_x: 0.0,
                 camera_y: 0.0,
@@ -205,6 +251,42 @@ impl<'a> BBMicroApi<'a> {
         self.canvas
             .copy(&self.sprites_texture, src_rect, dst_rect)
             .unwrap();
+    }
+
+    pub fn print(&mut self, text: &str, x: f32, y: f32, use_camera: bool) {
+        let mut curr_x = x;
+        let mut curr_y = y;
+
+        let offset_x = if use_camera {
+            self.draw_state.camera_x
+        } else {
+            0.0
+        };
+        let offset_y = if use_camera {
+            self.draw_state.camera_y
+        } else {
+            0.0
+        };
+
+        for character in text.chars() {
+            match self.font_entries.get(&character) {
+                Some(font_entry) => {
+                    let src_rect = Rect::new(
+                        font_entry.top_x as i32,
+                        font_entry.top_y as i32,
+                        font_entry.width() as u32,
+                        font_entry.height() as u32,
+                    );
+                    let dst_rect =
+                        Rect::new((curr_x - offset_x) as i32, (curr_y - offset_y) as i32, 8, 8);
+                    self.canvas
+                        .copy(&self.font_texture, src_rect, dst_rect)
+                        .unwrap();
+                }
+                None => {}
+            }
+            curr_x += 8.0;
+        }
     }
 
     pub fn rect(&mut self, x0: f32, y0: f32, x1: f32, y1: f32, col: Color) {

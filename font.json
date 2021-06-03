@@ -1,0 +1,205 @@
+{
+    "A": {
+        "top_x": 0,
+        "top_y": 9,
+        "bottom_x": 7,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "B": {
+        "top_x": 9,
+        "top_y": 9,
+        "bottom_x": 14,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "C": {
+        "top_x": 15,
+        "top_y": 9,
+        "bottom_x": 20,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "D": {
+        "top_x": 22,
+        "top_y": 9,
+        "bottom_x": 27,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "E": {
+        "top_x": 28,
+        "top_y": 9,
+        "bottom_x": 34,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "F": {
+        "top_x": 36,
+        "top_y": 9,
+        "bottom_x": 41,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "G": {
+        "top_x": 42,
+        "top_y": 9,
+        "bottom_x": 46,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "H": {
+        "top_x": 48,
+        "top_y": 9,
+        "bottom_x": 55,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "I": {
+        "top_x": 56,
+        "top_y": 9,
+        "bottom_x": 59,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "J": {
+        "top_x": 60,
+        "top_y": 9,
+        "bottom_x": 64,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "K": {
+        "top_x": 66,
+        "top_y": 9,
+        "bottom_x": 72,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "L": {
+        "top_x": 74,
+        "top_y": 9,
+        "bottom_x": 80,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "M": {
+        "top_x": 81,
+        "top_y": 9,
+        "bottom_x": 90,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "N": {
+        "top_x": 91,
+        "top_y": 9,
+        "bottom_x": 97,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "O": {
+        "top_x": 99,
+        "top_y": 9,
+        "bottom_x": 104,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "P": {
+        "top_x": 105,
+        "top_y": 9,
+        "bottom_x": 111,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "Q": {
+        "top_x": 99,
+        "top_y": 9,
+        "bottom_x": 118,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "R": {
+        "top_x": 119,
+        "top_y": 9,
+        "bottom_x": 126,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "S": {
+        "top_x": 127,
+        "top_y": 9,
+        "bottom_x": 132,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "T": {
+        "top_x": 133,
+        "top_y": 9,
+        "bottom_x": 140,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "U": {
+        "top_x": 142,
+        "top_y": 9,
+        "bottom_x": 148,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "V": {
+        "top_x": 148,
+        "top_y": 9,
+        "bottom_x": 168,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "W": {
+        "top_x": 157,
+        "top_y": 9,
+        "bottom_x": 168,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "X": {
+        "top_x": 169,
+        "top_y": 9,
+        "bottom_x": 178,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "Y": {
+        "top_x": 179,
+        "top_y": 9,
+        "bottom_x": 186,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    "Z": {
+        "top_x": 188,
+        "top_y": 9,
+        "bottom_x": 192,
+        "bottom_y": 16,
+        "bottom_offset": 0
+    },
+    ".": {
+        "top_x": 160,
+        "top_y": 28,
+        "bottom_x": 161,
+        "bottom_y": 29,
+        "bottom_offset": 0
+    },
+    "!": {
+        "top_x": 165,
+        "top_y": 22,
+        "bottom_x": 166,
+        "bottom_y": 29,
+        "bottom_offset": 0
+    },
+    "?": {
+        "top_x": 167,
+        "top_y": 22,
+        "bottom_x": 172,
+        "bottom_y": 29,
+        "bottom_offset": 0
+    }
+}
