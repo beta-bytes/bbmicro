@@ -73,8 +73,6 @@ impl BBMicroGame for Game1 {
 
     fn update(&mut self, api: &mut BBMicroApi) {
 
-        api.sfx("ghost.wav",1,0,0);
-
         self.count += 1;
 
         if self.count > 100 {
@@ -88,6 +86,7 @@ impl BBMicroGame for Game1 {
             self.x += 2.0;
         }
         if api.btn(Button::UP) {
+            
             self.y -= 2.0;
         }
         if api.btn(Button::DOWN) {
@@ -99,7 +98,6 @@ impl BBMicroGame for Game1 {
             goomba.y += self.rng.gen_range(-1.0..1.0);
 
             if((goomba.x -self.x).abs() < 3.0 && (goomba.y -self.y).abs() < 3.0) {
-                api.sfx("ghost.wav",1,0,0);
                 self.deadgoombas.push(Goomba {
                     id: goomba.id,
                     x: goomba.x,
@@ -111,6 +109,7 @@ impl BBMicroGame for Game1 {
         for goomba in &mut self.deadgoombas {
             if let Some(pos) = self.goombas.iter().position(|x| x.id == goomba.id) {
                 self.goombas.remove(pos);
+                api.sfx("ghost.wav",1,0,0);
             }
         }
 

@@ -125,6 +125,7 @@ pub struct BBMicroApi<'a> {
     texture_creator: &'a sdl2::render::TextureCreator<sdl2::video::WindowContext>,
     sprites_texture: sdl2::render::Texture<'a>,
     font_texture: sdl2::render::Texture<'a>,
+    sfx: sdl2::mixer::Chunk,
     font_entries: HashMap<char, FontEntry>,
     draw_state: DrawState,
     input_state: InputState,
@@ -179,6 +180,8 @@ impl<'a> BBMicroApi<'a> {
 
         let font_entries = load_font().expect("Could not load the font.json");
 
+        let sfx = load_sfx("ghost.wav").expect("expecting wav");
+
         BBMicroApi {
             canvas: canvas,
             texture_creator: texture_creator,
@@ -192,6 +195,7 @@ impl<'a> BBMicroApi<'a> {
             },
             input_state: InputState::new(),
             map_data: [0; 4 * 256 * 256],
+            sfx: sfx
         }
     }
 
@@ -384,11 +388,13 @@ impl<'a> BBMicroApi<'a> {
     }
 
     pub fn sfx(&mut self, audio: &str, channel: i32, offset: u32, length: u32) {
-        let error = "missing resource file ".to_owned() + &audio.to_owned();
-        let sound_chunk = load_sfx(audio).expect(&error);
-        match sdl2::mixer::Channel::all().play(&sound_chunk, 1) {
-            Ok(_) => (),
-            Err(_) => ()
+        match sdl2::mixer::Channel::all().play(&self.sfx, 1) {
+            Ok(_) => {
+                print!("Success!\n");
+            },
+            Err(err) => {
+                print!("{}", &err);
+            }
         }
     }
 }

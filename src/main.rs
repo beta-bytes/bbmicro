@@ -139,6 +139,7 @@ fn main() -> Result<(), String> {
         game.draw(&mut api);
 
         api.flip();
+
     }
 
     Ok(())
