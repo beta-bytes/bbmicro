@@ -3,8 +3,10 @@ use std::time::Duration;
 use sdl2::event::Event;
 use sdl2::image::{InitFlag, LoadTexture};
 use sdl2::keyboard::Keycode;
+use sdl2::mixer::{AUDIO_S16LSB, DEFAULT_CHANNELS};
 use sdl2::pixels;
 use sdl2::rect::Rect;
+
 
 use serde::Deserialize;
 
@@ -156,6 +158,11 @@ fn load_font() -> Result<HashMap<char, FontEntry>, Box<dyn Error>> {
     let font_entries: HashMap<char, FontEntry> = serde_json::from_reader(reader)?;
     // Return the `User`.
     Ok(font_entries)
+}
+
+fn load_sfx(sfx: &str) -> Result<sdl2::mixer::Chunk, Box<dyn Error>> {
+    let audio = sdl2::mixer::Chunk::from_file(sfx)?;
+    Ok(audio)
 }
 
 impl<'a> BBMicroApi<'a> {
@@ -373,6 +380,15 @@ impl<'a> BBMicroApi<'a> {
                     false,
                 );
             }
+        }
+    }
+
+    pub fn sfx(&mut self, audio: &str, channel: i32, offset: u32, length: u32) {
+        let error = "missing resource file ".to_owned() + &audio.to_owned();
+        let sound_chunk = load_sfx(audio).expect(&error);
+        match sdl2::mixer::Channel::all().play(&sound_chunk, 1) {
+            Ok(_) => (),
+            Err(_) => ()
         }
     }
 }
