@@ -109,7 +109,7 @@ impl BBMicroGame for Game1 {
         for goomba in &mut self.deadgoombas {
             if let Some(pos) = self.goombas.iter().position(|x| x.id == goomba.id) {
                 self.goombas.remove(pos);
-                api.sfx("ghost.wav",1,0,0);
+                api.sfx(1,1,0,0);
             }
         }
 

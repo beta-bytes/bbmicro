@@ -387,8 +387,8 @@ impl<'a> BBMicroApi<'a> {
         }
     }
 
-    pub fn sfx(&mut self, audio: &str, channel: i32, offset: u32, length: u32) {
-        match sdl2::mixer::Channel::all().play(&self.sfx, 1) {
+    pub fn sfx(&mut self, audio: i32, channel: i32, offset: u32, length: u32) {
+        match sdl2::mixer::Channel(channel).play(&self.sfx, 0) {
             Ok(_) => {
                 print!("Success!\n");
             },
