@@ -135,14 +135,6 @@ impl BBMicroGame for Game1 {
         self.cat_x = new_cat_pos.0;
         self.cat_y = new_cat_pos.1;
 
-        // let new_roomba_pos = self.bound(self.roomba_x, self.roomba_y);
-        // self.roomba_x = new_roomba_pos.0;
-        // self.roomba_y = new_roomba_pos.1;
-
-        // Flip
-        // let tile_x = (self.roomba_x + 4.0) as u32 / 8;
-        // let tile_y = (self.roomba_y + 4.0) as u32 / 8;
-
         let cat_tile_position = self.get_tile_position((self.cat_x, self.cat_y));
         let roomba_tile_pos = self.get_tile_position((self.roomba_x, self.roomba_y));
 
@@ -172,9 +164,6 @@ impl BBMicroGame for Game1 {
                 self.clean_count -= 1;
             }
         }
-        // if tile_position.0 >= 0 && tile_position.0 < 256 && tile_position.1 >= 0 && tile_position.1 < 256 {
-        //     api.mset(tile_position.0, tile_position.1, 0, Tiles::Dirty as u8);
-        // }
 
         self.ai_move(api);
     }
