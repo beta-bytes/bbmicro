@@ -1,0 +1,14 @@
+{
+    "music": [
+        {
+            "name": "bgm",
+            "path": "music.mp3"
+        }
+    ],
+    "sfx": [
+        {
+            "name": "ghost",
+            "path":"ghost.wav"
+        }
+    ]
+}

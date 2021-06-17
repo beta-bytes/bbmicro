@@ -125,7 +125,8 @@ pub struct BBMicroApi<'a> {
     texture_creator: &'a sdl2::render::TextureCreator<sdl2::video::WindowContext>,
     sprites_texture: sdl2::render::Texture<'a>,
     font_texture: sdl2::render::Texture<'a>,
-    sfx: sdl2::mixer::Chunk,
+    sfx: HashMap<String,sdl2::mixer::Chunk>,
+    music: HashMap<String, sdl2::mixer::Music<'a>>,
     font_entries: HashMap<char, FontEntry>,
     draw_state: DrawState,
     input_state: InputState,
@@ -161,9 +162,26 @@ fn load_font() -> Result<HashMap<char, FontEntry>, Box<dyn Error>> {
     Ok(font_entries)
 }
 
-fn load_sfx(sfx: &str) -> Result<sdl2::mixer::Chunk, Box<dyn Error>> {
-    let audio = sdl2::mixer::Chunk::from_file(sfx)?;
-    Ok(audio)
+
+#[derive(Deserialize, Debug)]
+struct AudioConfig {
+    music: Vec<AudioEntry>,
+    sfx: Vec<AudioEntry>
+}
+
+#[derive(Deserialize, Debug)]
+struct AudioEntry {
+    path: String,
+    name: String
+}
+
+fn load_audio() -> Result<AudioConfig, Box<dyn Error>> {
+    let file = File::open("audio.json")?;
+    let reader = BufReader::new(file);
+
+    // Read the JSON contents of the file as an instance of `AudioEntry`.
+    let audio_entries: AudioConfig = serde_json::from_reader(reader)?;
+    Ok(audio_entries)
 }
 
 impl<'a> BBMicroApi<'a> {
@@ -180,7 +198,17 @@ impl<'a> BBMicroApi<'a> {
 
         let font_entries = load_font().expect("Could not load the font.json");
 
-        let sfx = load_sfx("ghost.wav").expect("expecting wav");
+        let audio_entries = load_audio().expect("Could not load the audio.json");
+
+        let mut music = HashMap::new();
+        for musicName in audio_entries.music {
+            music.insert(musicName.name, sdl2::mixer::Music::from_file(musicName.path).expect("Missing music files"));
+        }
+
+        let mut sfx = HashMap::new();
+        for sfxName in audio_entries.sfx {
+            sfx.insert(sfxName.name, sdl2::mixer::Chunk::from_file(sfxName.path).expect("Missing wav files"));
+        }
 
         BBMicroApi {
             canvas: canvas,
@@ -195,7 +223,8 @@ impl<'a> BBMicroApi<'a> {
             },
             input_state: InputState::new(),
             map_data: [0; 4 * 256 * 256],
-            sfx: sfx
+            sfx: sfx,
+            music: music,
         }
     }
 
@@ -387,14 +416,37 @@ impl<'a> BBMicroApi<'a> {
         }
     }
 
-    pub fn sfx(&mut self, audio: i32, channel: i32, offset: u32, length: u32) {
-        match sdl2::mixer::Channel(channel).play(&self.sfx, 0) {
-            Ok(_) => {
-                print!("Success!\n");
-            },
-            Err(err) => {
-                print!("{}", &err);
+    pub fn sfx(&mut self, audio: &str, channel: i32, offset: u32, length: u32) {
+        //TODO offset and length unused
+        match self.sfx.get(audio) {
+            Some(audio) => {
+                match sdl2::mixer::Channel(channel).play(&audio, 0) {
+                    Ok(_) => {
+                        print!("Success!\n");
+                    },
+                    Err(err) => {
+                        print!("{}", &err);
+                    }
+                }
             }
+            None => print!("no sfx found")
+        }
+    }
+
+    pub fn music(&mut self, audio: &str, fadems: u32, channelmask: u32) {
+        //TODO fadems and channelmask unused
+        match &self.music.get(audio) {
+            Some(audio) => {
+                match audio.play(-1) {
+                    Ok(_) => {
+                        print!("Success!\n");
+                    },
+                    Err(err) => {
+                        print!("{}", &err);
+                    }
+                }
+            }
+            None => print!("no music found")
         }
     }
 }
