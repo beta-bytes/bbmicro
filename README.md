@@ -34,3 +34,14 @@ maps, or layering, but we also don't want to be too prescriptive. For now the ga
 
 Input is a, b, up, down, left, right. We can work on providing a mechanism to map these to controllers or different keys.
 You acces input via the ```btn``` and ```btnp``` methods.
+
+## Running and building
+
+### Windows
+To run the project, use ```cargo run```. If you want to distribute a build, ```cargo build``` (with release to strip debugging symbols).
+
+Then copy the executable that was built along with the dlls copied into the folder by the build process. This should be a distributable folder that will run on a new machine.
+
+### Other OSs
+
+Coming soon!
