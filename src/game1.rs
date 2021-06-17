@@ -11,6 +11,7 @@ pub struct Game1 {
     cat_x: f32,
     cat_y: f32,
     rng: ThreadRng,
+    clean_count: u32,
 }
 
 impl Game1 {
@@ -23,12 +24,15 @@ impl Game1 {
             cat_x: 10.0,
             cat_y: 10.0,
             rng: rand::thread_rng(),
+            clean_count: 0,
         }
     }
 
     pub fn bound(&self, x: f32, y: f32) -> (f32, f32) {
-        (x.min(self.width - 8.0).max(0.0),
-        y.min(self.height - 8.0).max(0.0))
+        (
+            x.min(self.width - 8.0).max(0.0),
+            y.min(self.height - 8.0).max(0.0),
+        )
     }
 }
 
@@ -36,7 +40,7 @@ enum Tiles {
     Dirty = 1,
     Cat = 2,
     Roomba = 3,
-    Clean = 6,
+    Clean = 7,
 }
 
 impl BBMicroGame for Game1 {
@@ -57,7 +61,7 @@ impl BBMicroGame for Game1 {
             self.cat_x -= 2.0;
             self.roomba_x -= 2.0;
         }
-        if api.btn(Button::RIGHT){
+        if api.btn(Button::RIGHT) {
             self.cat_x += 2.0;
             self.roomba_x += 2.0;
         }
@@ -65,7 +69,7 @@ impl BBMicroGame for Game1 {
             self.cat_y -= 2.0;
             self.roomba_y -= 2.0;
         }
-        if api.btn(Button::DOWN){
+        if api.btn(Button::DOWN) {
             self.cat_y += 2.0;
             self.roomba_y += 2.0;
         }
@@ -83,7 +87,10 @@ impl BBMicroGame for Game1 {
         let tile_y = (self.roomba_y + 4.0) as u32 / 8;
 
         if tile_x >= 0 && tile_x < 256 && tile_y >= 0 && tile_y < 256 {
-            api.mset(tile_x, tile_y, 0, Tiles::Clean as u8);
+            if api.mget(tile_x, tile_y, 0) == Tiles::Dirty as u8 {
+                api.mset(tile_x, tile_y, 0, Tiles::Clean as u8);
+                self.clean_count += 1;
+            }
         }
     }
 
@@ -109,6 +116,19 @@ impl BBMicroGame for Game1 {
             8.0,
             false,
             false,
+        );
+
+        let clean_percent = (self.clean_count as f32) / (16.0 * 16.0);
+
+        api.rect(105.0, 5.0, 105.0 + 20.0, 8.0, 3, true, true);
+        api.rect(
+            105.0,
+            5.0,
+            105.0 + clean_percent * 20.0,
+            8.0,
+            2,
+            true,
+            true,
         );
     }
 }

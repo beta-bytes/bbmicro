@@ -333,15 +333,29 @@ impl<'a> BBMicroApi<'a> {
         }
     }
 
-    pub fn rect(&mut self, x0: f32, y0: f32, x1: f32, y1: f32, col: Color) {
-        let (x0, y0) = self.to_camera(x0, y0);
-        let (x1, y1) = self.to_camera(x1, y1);
-
+    pub fn rect(
+        &mut self,
+        x0: f32,
+        y0: f32,
+        x1: f32,
+        y1: f32,
+        col: Color,
+        fill: bool,
+        use_camera: bool,
+    ) {
+        if use_camera {
+            let (x0, y0) = self.to_camera(x0, y0);
+            let (x1, y1) = self.to_camera(x1, y1);
+        }
         self.canvas.set_draw_color(self.to_sdl_color(col));
         let w = x1 - x0;
         let h = y1 - y0;
         let r = Rect::new(x0 as i32, y0 as i32, w as u32, h as u32);
-        self.canvas.draw_rect(r);
+        if fill {
+            self.canvas.fill_rect(r);
+        } else {
+            self.canvas.draw_rect(r);
+        }
     }
 
     pub fn flip(&mut self) {
@@ -383,7 +397,7 @@ impl<'a> BBMicroApi<'a> {
         self.map_data[celx as usize + (cely as usize) * 256 + offset] = snum;
     }
 
-    pub fn mget(&mut self, celx: u32, cely: u32, layer: u8, snum: u8) -> u8 {
+    pub fn mget(&mut self, celx: u32, cely: u32, layer: u8) -> u8 {
         assert_eq!(layer < 4, true);
         let offset = layer as usize * 256 * 256;
 
