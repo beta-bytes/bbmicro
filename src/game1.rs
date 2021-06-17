@@ -133,14 +133,13 @@ impl BBMicroGame for Game1 {
             api.spr(8, goomba.x, goomba.y, 8.0, 8.0, false, false);
         }
 
-<<<<<<< HEAD
         // Draw map layer 1.
         api.map(0, 0, 0.0, 0.0, 256, 256, 1);
-=======
+
+        //Draw dead gooombas
         for goomba in &self.deadgoombas {
             api.spr(9, goomba.x, goomba.y, 8.0, 8.0, false, false);
         }
->>>>>>> 77ae882 (trying to get audio to work)
 
         api.print("HELLO BETABYTES!", 5.0, 5.0, false);
     }
