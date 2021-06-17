@@ -39,8 +39,8 @@ impl BBMicroGame for Game1 {
             }
         }
 
-        //Play BGM
-        api.music("bgm", 0,0);
+        // Play BGM
+        api.music("bgm", 0, 0);
     }
 
     fn update(&mut self, api: &mut BBMicroApi) {
@@ -61,14 +61,13 @@ impl BBMicroGame for Game1 {
             self.roomba_y += 2.0;
         }
 
-        // Flip 
+        // Flip
         let tile_x = (self.roomba_x + 4.0) as u32 / 8;
         let tile_y = (self.roomba_y + 4.0) as u32 / 8;
 
         if tile_x >= 0 && tile_x < 256 && tile_y >= 0 && tile_y < 256 {
             api.mset(tile_x, tile_y, 0, Tiles::Clean as u8);
         }
-
     }
 
     fn draw(&mut self, api: &mut BBMicroApi) {
