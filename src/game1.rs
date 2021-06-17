@@ -71,7 +71,7 @@ impl BBMicroGame for Game1 {
         api.mset(15, 15, 1, Tiles::Bird as u8);
 
         //Play BGM
-        api.music("bgm", 0,0);
+        //api.music("bgm", 0,0); //Uncomment after adding music.mp3
     }
 
     fn update(&mut self, api: &mut BBMicroApi) {

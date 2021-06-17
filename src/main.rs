@@ -55,11 +55,7 @@ fn main() -> Result<(), String> {
     sdl2::mixer::open_audio(frequency, format, channels, chunk_size)?;
     sdl2::mixer::allocate_channels(4);
     let _mixer_context = sdl2::mixer::init(sdl2::mixer::InitFlag::MP3);
-
-    //TODO this works
-    //let music = sdl2::mixer::Music::from_file("music.mp3").expect("Missing bgm music.mp3");
-    //music.play(-1).expect("Failed to play bgm");
-
+    
     // Setup canvas.
     let mut canvas = window
         .into_canvas()
