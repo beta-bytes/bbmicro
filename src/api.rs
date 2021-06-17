@@ -126,7 +126,7 @@ pub struct BBMicroApi<'a> {
     font_entries: HashMap<char, FontEntry>,
     draw_state: DrawState,
     input_state: InputState,
-    map_data: [u8; 256 * 256],
+    map_data: [u8; 4 * 256 * 256],
 }
 
 #[derive(Deserialize, Debug)]
@@ -184,7 +184,7 @@ impl<'a> BBMicroApi<'a> {
                 pen: 0,
             },
             input_state: InputState::new(),
-            map_data: [0; 256 * 256],
+            map_data: [0; 4 * 256 * 256],
         }
     }
 
@@ -330,20 +330,27 @@ impl<'a> BBMicroApi<'a> {
         }
     }
 
-    pub fn mset(&mut self, celx: u32, cely: u32, snum: u8) {
+    pub fn mset(&mut self, celx: u32, cely: u32, layer: u8, snum: u8) {
+        assert_eq!(layer < 4, true);
+        let offset = layer as usize * 256 * 256;
+
         assert_eq!(celx < 256, true);
         assert_eq!(cely < 256, true);
-        self.map_data[celx as usize + (cely as usize) * 256] = snum;
+        self.map_data[celx as usize + (cely as usize) * 256 + offset] = snum;
     }
 
-    pub fn mget(&mut self, celx: u32, cely: u32, snum: u8) -> u8 {
+    pub fn mget(&mut self, celx: u32, cely: u32, layer: u8, snum: u8) -> u8 {
+        assert_eq!(layer < 4, true);
+        let offset = layer as usize * 256 * 256;
+
         assert_eq!(celx < 256, true);
         assert_eq!(cely < 256, true);
-        return self.map_data[celx as usize + (cely as usize) * 256];
+        return self.map_data[celx as usize + (cely as usize) * 256 + offset];
     }
 
     pub fn map(&mut self, celx: u32, cely: u32, sx: f32, sy: f32, celw: u32, celh: u32, layer: u8) {
-        // for now we ignore layer
+        assert_eq!(layer < 4, true);
+        let offset = layer as usize * 256 * 256;
 
         for i_x in 0..celw {
             for i_y in 0..celh {
@@ -353,7 +360,7 @@ impl<'a> BBMicroApi<'a> {
                     continue;
                 }
 
-                let tile = self.map_data[t_x + t_y * 256];
+                let tile = self.map_data[t_x + t_y * 256 + offset];
 
                 // Get the sprite value at the current location
                 self.spr(

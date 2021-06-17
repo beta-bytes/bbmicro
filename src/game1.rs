@@ -29,13 +29,14 @@ impl Game1 {
 }
 
 enum Tiles {
-    Grass = 0,
+    Grass = 48,
     WaterTL = 16,
     WaterTR = 17,
     WaterBL = 32,
     WaterBR = 33,
     WaterL = 34,
-    WaterR = 19
+    WaterR = 19,
+    Bird = 2
 }
 
 impl BBMicroGame for Game1 {
@@ -47,13 +48,23 @@ impl BBMicroGame for Game1 {
             });
         }
 
+        // Draw the base map on layer 0.
+        for x in 0..256 {
+            for y in 0..256 {
+                api.mset(x, y, 0, Tiles::Grass as u8);
+            }
+        }
+
         // Draw a little island.
-        api.mset(10, 10, Tiles::WaterTL as u8);
-        api.mset(11, 10, Tiles::WaterTR as u8);
-        api.mset(10, 11, Tiles::WaterL as u8);
-        api.mset(11, 11, Tiles::WaterR as u8);
-        api.mset(10, 12, Tiles::WaterBL as u8);
-        api.mset(11, 12, Tiles::WaterBR as u8);
+        api.mset(10, 10, 0, Tiles::WaterTL as u8);
+        api.mset(11, 10, 0, Tiles::WaterTR as u8);
+        api.mset(10, 11, 0, Tiles::WaterL as u8);
+        api.mset(11, 11, 0, Tiles::WaterR as u8);
+        api.mset(10, 12, 0, Tiles::WaterBL as u8);
+        api.mset(11, 12, 0, Tiles::WaterBR as u8);
+
+        // Draw on layer 1 a bird.
+        api.mset(15, 15, 1, Tiles::Bird as u8);
     }
 
     fn update(&mut self, api: &mut BBMicroApi) {
@@ -85,6 +96,7 @@ impl BBMicroGame for Game1 {
     fn draw(&mut self, api: &mut BBMicroApi) {
         api.camera(self.x - 60.0, self.y - 60.0);
 
+        // Draw map layer 0.
         api.map(0, 0, 0.0, 0.0, 256, 256, 0);
 
         let spr = if self.count > 50 { 1 } else { 2 };
@@ -96,6 +108,9 @@ impl BBMicroGame for Game1 {
         for goomba in &self.goombas {
             api.spr(8, goomba.x, goomba.y, 8.0, 8.0, false, false);
         }
+
+        // Draw map layer 1.
+        api.map(0, 0, 0.0, 0.0, 256, 256, 1);
 
         api.print("HELLO BETABYTES!", 5.0, 5.0, false);
     }
