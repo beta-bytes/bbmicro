@@ -25,10 +25,14 @@ works its way accross and then down in 8x8 blocks. There are 16 tiles in each ro
 
 #### Mapping
 
-Currently mapping is very very simple. We have a default 256 x 256 map. To draw it use ```map```. It is initialized the 0 sprite.
+Currently mapping is very very simple. We have a default 256 x 256 map with 4 layers. 
+To draw it use ```map```. It is initialized the 0 sprite.
 
 To modify the map, use ```mset```. To check the map use ```mget```. In the future we may want to add simple feature for loading
 maps, or layering, but we also don't want to be too prescriptive. For now the game can do its own "loading" via ```mset```.
+
+The layers have no meaning except to provide you with 4 seperate planes. It's up to you to draw them in an order that makes sense. For instance
+drawing layer 0, then the player sprite, then layer 1 may make sense in for having a ground floor, the player, and then an overlay (for instance for treetops).
 
 ### Input
 
