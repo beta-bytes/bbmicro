@@ -8,7 +8,7 @@
     "sfx": [
         {
             "name": "ghost",
-            "path":"ghost.wav"
+            "path":"Hit_Hurt2.wav"
         }
     ]
 }
