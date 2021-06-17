@@ -40,7 +40,7 @@ impl BBMicroGame for Game1 {
         }
 
         //Play BGM
-        //api.music("bgm", 0,0); //Uncomment after adding music.mp3
+        api.music("bgm", 0,0);
     }
 
     fn update(&mut self, api: &mut BBMicroApi) {
