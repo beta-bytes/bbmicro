@@ -24,7 +24,11 @@ impl Game1 {
             cat_y: 10.0,
             rng: rand::thread_rng(),
         }
+    }
 
+    pub fn bound(&self, x: f32, y: f32) -> (f32, f32) {
+        (x.min(self.width - 8.0).max(0.0),
+        y.min(self.height - 8.0).max(0.0))
     }
 }
 
@@ -49,23 +53,30 @@ impl BBMicroGame for Game1 {
     }
 
     fn update(&mut self, api: &mut BBMicroApi) {
-
-        if api.btn(Button::LEFT) && self.cat_x > 0.0 {
+        if api.btn(Button::LEFT) {
             self.cat_x -= 2.0;
             self.roomba_x -= 2.0;
         }
-        if api.btn(Button::RIGHT) && self.cat_x < self.width - 8.0 {
+        if api.btn(Button::RIGHT){
             self.cat_x += 2.0;
             self.roomba_x += 2.0;
         }
-        if api.btn(Button::UP) && self.cat_y > 0.0 {
+        if api.btn(Button::UP) {
             self.cat_y -= 2.0;
             self.roomba_y -= 2.0;
         }
-        if api.btn(Button::DOWN) && self.cat_y < self.height - 8.0 {
+        if api.btn(Button::DOWN){
             self.cat_y += 2.0;
             self.roomba_y += 2.0;
         }
+
+        let new_cat_pos = self.bound(self.cat_x, self.cat_y);
+        self.cat_x = new_cat_pos.0;
+        self.cat_y = new_cat_pos.1;
+
+        let new_roomba_pos = self.bound(self.roomba_x, self.roomba_y);
+        self.roomba_x = new_roomba_pos.0;
+        self.roomba_y = new_roomba_pos.1;
 
         // Flip
         let tile_x = (self.roomba_x + 4.0) as u32 / 8;
