@@ -4,6 +4,8 @@ use rand::rngs::ThreadRng;
 use rand::Rng;
 
 pub struct Game1 {
+    height: f32,
+    width: f32,
     roomba_x: f32,
     roomba_y: f32,
     cat_x: f32,
@@ -14,12 +16,15 @@ pub struct Game1 {
 impl Game1 {
     pub fn new() -> Game1 {
         Game1 {
+            height: 128.0,
+            width: 128.0,
             roomba_x: 100.0,
             roomba_y: 100.0,
             cat_x: 10.0,
             cat_y: 10.0,
             rng: rand::thread_rng(),
         }
+
     }
 }
 
@@ -44,19 +49,20 @@ impl BBMicroGame for Game1 {
     }
 
     fn update(&mut self, api: &mut BBMicroApi) {
-        if api.btn(Button::LEFT) {
+
+        if api.btn(Button::LEFT) && self.cat_x > 0.0 {
             self.cat_x -= 2.0;
             self.roomba_x -= 2.0;
         }
-        if api.btn(Button::RIGHT) {
+        if api.btn(Button::RIGHT) && self.cat_x < self.width - 8.0 {
             self.cat_x += 2.0;
             self.roomba_x += 2.0;
         }
-        if api.btn(Button::UP) {
+        if api.btn(Button::UP) && self.cat_y > 0.0 {
             self.cat_y -= 2.0;
             self.roomba_y -= 2.0;
         }
-        if api.btn(Button::DOWN) {
+        if api.btn(Button::DOWN) && self.cat_y < self.height - 8.0 {
             self.cat_y += 2.0;
             self.roomba_y += 2.0;
         }
