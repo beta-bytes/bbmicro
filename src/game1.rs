@@ -28,8 +28,8 @@ impl Game1 {
     }
 }
 
-#[repr(u8)]
 enum Tiles {
+    Grass = 0,
     WaterTL = 16,
     WaterTR = 17,
     WaterBL = 32,
