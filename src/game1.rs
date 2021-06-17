@@ -28,6 +28,16 @@ impl Game1 {
     }
 }
 
+#[repr(u8)]
+enum Tiles {
+    WaterTL = 16,
+    WaterTR = 17,
+    WaterBL = 32,
+    WaterBR = 33,
+    WaterL = 34,
+    WaterR = 19
+}
+
 impl BBMicroGame for Game1 {
     fn init(&mut self, api: &mut BBMicroApi) {
         for _ in 0..100 {
@@ -36,6 +46,14 @@ impl BBMicroGame for Game1 {
                 y: self.rng.gen_range(0.0..300.0),
             });
         }
+
+        // Draw a little island.
+        api.mset(10, 10, Tiles::WaterTL as u8);
+        api.mset(11, 10, Tiles::WaterTR as u8);
+        api.mset(10, 11, Tiles::WaterL as u8);
+        api.mset(11, 11, Tiles::WaterR as u8);
+        api.mset(10, 12, Tiles::WaterBL as u8);
+        api.mset(11, 12, Tiles::WaterBR as u8);
     }
 
     fn update(&mut self, api: &mut BBMicroApi) {

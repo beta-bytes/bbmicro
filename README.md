@@ -19,9 +19,16 @@ The resolution of the game is 128 x 128.
 There is one spritesheet: ```sprites.png```, you should edit / replace this with graphics you'd like to use in your game. 
 There is a ```camera``` method that you can use as a virtual camera. All the drawing commands can respect it (some are optional).
 ```spr``` draws sprites from the spritesheet onto the screen. The convention is sprite 0 is the top left corner, it then 
-works its way accross and then down in 8x8 blocks.
+works its way accross and then down in 8x8 blocks. There are 16 tiles in each row and column.
 ```print``` prints strings onto the screen. Currently only uppercase is supported. (We will fix this soon).
-```map```: TODO. Needs some more implementation.
+
+
+#### Mapping
+
+Currently mapping is very very simple. We have a default 256 x 256 map. To draw it use ```map```. It is initialized the 0 sprite.
+
+To modify the map, use ```mset```. To check the map use ```mget```. In the future we may want to add simple feature for loading
+maps, or layering, but we also don't want to be too prescriptive. For now the game can do its own "loading" via ```mset```.
 
 ### Input
 

@@ -330,6 +330,18 @@ impl<'a> BBMicroApi<'a> {
         }
     }
 
+    pub fn mset(&mut self, celx: u32, cely: u32, snum: u8) {
+        assert_eq!(celx < 256, true);
+        assert_eq!(cely < 256, true);
+        self.map_data[celx as usize + (cely as usize) * 256] = snum;
+    }
+
+    pub fn mget(&mut self, celx: u32, cely: u32, snum: u8) -> u8 {
+        assert_eq!(celx < 256, true);
+        assert_eq!(cely < 256, true);
+        return self.map_data[celx as usize + (cely as usize) * 256];
+    }
+
     pub fn map(&mut self, celx: u32, cely: u32, sx: f32, sy: f32, celw: u32, celh: u32, layer: u8) {
         // for now we ignore layer
 
