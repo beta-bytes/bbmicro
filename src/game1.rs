@@ -107,7 +107,7 @@ impl Game1 {
     fn update_clouds(&mut self) {
         
         for x in self.clouds.iter_mut() {
-            x.pos_x = x.pos_x - x.pos_y / 128.0 + 0.7;
+            x.pos_x = x.pos_x - x.pos_y / 128.0 + 0.2;
         }
 
         if self.clouds.len() > 0 && self.clouds[0].pos_x < 0.0 {
@@ -166,7 +166,7 @@ impl BBMicroGame for Game1 {
         }
 
         if api.btnp(Button::A) {
-            print!("pewpew\n");
+            println!("pewpew\n");
             self.bullets.push_back(Bullet {
                 pos_x: self.cat_x,
                 pos_y: self.cat_y,

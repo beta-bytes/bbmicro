@@ -1,4 +1,4 @@
-//#![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 use sdl2::mixer::{AUDIO_S16LSB, DEFAULT_CHANNELS};
 
 use sdl2::event::Event;
@@ -41,7 +41,7 @@ fn main() -> Result<(), String> {
 
     // Setup window.
     let window = video_subsystem
-        .window("BBMicro", 640*2, 480*2)
+        .window("BBMicro", 480, 480)
         .position_centered()
         .build()
         .map_err(|e| e.to_string())?;
