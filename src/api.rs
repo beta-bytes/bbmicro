@@ -188,7 +188,7 @@ impl<'a> BBMicroApi<'a> {
         texture_creator: &'a sdl2::render::TextureCreator<sdl2::video::WindowContext>,
     ) -> BBMicroApi<'a> {
         let sprites_texture = texture_creator
-            .load_texture("../sprites_old.png")
+            .load_texture("./sprites.png")
             .expect("Couldn't load the texture");
         let font_texture = texture_creator
             .load_texture("font.png")
@@ -292,6 +292,16 @@ impl<'a> BBMicroApi<'a> {
 
         let src_rect = Rect::new(src_x as i32, src_y as i32, 8, 8);
         let dst_rect = Rect::new(x as i32, y as i32, 8, 8);
+        self.canvas
+            .copy(&self.sprites_texture, src_rect, dst_rect)
+            .unwrap();
+    }
+
+    pub fn spr_abs(&mut self, src_x: u32, src_y: u32, src_w: u32, src_h: u32, x: f32, y: f32, flip_x: bool, flip_y: bool) {
+        let (x, y) = self.to_camera(x, y);
+
+        let src_rect = Rect::new(src_x as i32, src_y as i32, src_h, src_w);
+        let dst_rect = Rect::new(x as i32, y as i32, src_h, src_w);
         self.canvas
             .copy(&self.sprites_texture, src_rect, dst_rect)
             .unwrap();

@@ -2,16 +2,39 @@ use crate::api::{BBMicroApi, BBMicroGame, Button};
 
 use rand::rngs::ThreadRng;
 use rand::Rng;
+use std::collections::VecDeque;
 
 pub struct Game1 {
     height: f32,
     width: f32,
-    roomba_x: f32,
-    roomba_y: f32,
     cat_x: f32,
     cat_y: f32,
+    gems: VecDeque<Gem>,
+    clouds: VecDeque<Cloud>,
+    bullets: VecDeque<Bullet>,
     rng: ThreadRng,
-    clean_count: u32,
+    charge_bar: u32,
+    frame: u32,
+}
+
+pub struct Gem {
+    art: u8,
+    pos_x: f32,
+    pos_y: f32,
+    hit: bool
+}
+
+pub struct Cloud {
+    art: u8,
+    pos_x: f32,
+    pos_y: f32,
+    width: u8
+}
+
+
+pub struct Bullet {
+    pos_x: f32,
+    pos_y: f32
 }
 
 impl Game1 {
@@ -19,12 +42,14 @@ impl Game1 {
         Game1 {
             height: 128.0,
             width: 128.0,
-            roomba_x: 100.0,
-            roomba_y: 100.0,
             cat_x: 10.0,
             cat_y: 10.0,
             rng: rand::thread_rng(),
-            clean_count: 0,
+            charge_bar: 0,
+            gems: VecDeque::new(),
+            clouds: VecDeque::new(),
+            bullets: VecDeque::new(),
+            frame: 0,
         }
     }
 
@@ -35,77 +60,90 @@ impl Game1 {
         )
     }
 
-    fn ai_move(&mut self, api: &mut BBMicroApi) {
-        //clean path detection
-        let tile_position = self.get_tile_position((self.roomba_x, self.roomba_y));
-        let avail_positions = &Game1::get_avail_positions(tile_position, api);
-
-        //move
-        if avail_positions.len() > 0 {
-            if matches!(avail_positions[0], Directions::LEFT) {
-                self.roomba_x -= 1.0;
-            } else if matches!(avail_positions[0], Directions::RIGHT) {
-                self.roomba_x += 1.0;
-            } else if matches!(avail_positions[0], Directions::UP) {
-                self.roomba_y -= 1.0;
-            } else if matches!(avail_positions[0], Directions::DOWN) {
-                self.roomba_y += 1.0
-            }
-        }
-
-        let new_roomba_pos = self.bound(self.roomba_x, self.roomba_y);
-        self.roomba_x = new_roomba_pos.0;
-        self.roomba_y = new_roomba_pos.1;
-    }
-
     fn get_tile_position(&mut self, position: (f32, f32)) -> (u32, u32) {
         ((position.0 + 4.0) as u32 / 8, (position.1 + 4.0) as u32 / 8)
     }
 
-    fn get_avail_positions(current_tile: (u32, u32), api: &mut BBMicroApi) -> Vec<Directions> {
-        let mut avail_positions: Vec<Directions> = Vec::new();
-        let curr_x = current_tile.0 as i32;
-        let curr_y = current_tile.1 as i32;
-
-        if curr_x + 1 <= 15 && api.mget(current_tile.0 + 1, current_tile.1, 0) == Tiles::Dirty as u8
-        {
-            avail_positions.push(Directions::RIGHT);
-        } else if curr_x - 1 >= 0
-            && api.mget(current_tile.0 - 1, current_tile.1, 0) == Tiles::Dirty as u8
-        {
-            avail_positions.push(Directions::LEFT);
-        } else if curr_y - 1 >= 0
-            && api.mget(current_tile.0, current_tile.1 - 1, 0) == Tiles::Dirty as u8
-        {
-            avail_positions.push(Directions::UP);
-        } else if curr_y + 1 <= 15
-            && api.mget(current_tile.0, current_tile.1 + 1, 0) == Tiles::Dirty as u8
-        {
-            avail_positions.push(Directions::DOWN);
+    fn update_bullets(&mut self) {
+        for bullet in self.bullets.iter_mut() {
+            bullet.pos_x = bullet.pos_x + 2.0;
+            
+            for gem in self.gems.iter_mut() {
+                if (gem.pos_x - bullet.pos_x).abs() < 8.0 && (bullet.pos_y - gem.pos_y).abs() < 8.0  && !gem.hit  {
+                    gem.hit = true;
+                    gem.art = self.rng.gen_range(1..4) * 16; //80;
+                }
+            }
         }
-        return avail_positions;
+
+        if self.bullets.len() > 0 && self.bullets[0].pos_x < 0.0 {
+            self.bullets.pop_front();
+        }
+    }
+
+    fn update_gems(&mut self) {
+
+        for gem in self.gems.iter_mut() {
+            gem.pos_x = gem.pos_x - 1.0;
+            if gem.hit {
+                gem.pos_y = gem.pos_y - 1.0;
+            }
+        }
+        
+        if self.gems.len() > 0 && (self.gems[0].pos_x < 0.0 || self.gems[0].pos_y < 0.0) {
+            self.gems.pop_front();
+        }
+
+        if self.gems.len() < 5 && self.rng.gen_range(0..5) == 1 {
+            self.gems.push_back(Gem {
+                art: 4,
+                pos_x: 128.0,
+                pos_y: self.rng.gen_range(32..96) as f32,
+                hit: false
+            });
+        }
+    }
+
+    fn update_clouds(&mut self) {
+        
+        for x in self.clouds.iter_mut() {
+            x.pos_x = x.pos_x - x.pos_y / 128.0 + 0.7;
+        }
+
+        if self.clouds.len() > 0 && self.clouds[0].pos_x < 0.0 {
+            self.clouds.pop_front();
+        }
+
+        if self.clouds.len() < 5 && self.rng.gen_range(0..5) == 1 {
+            self.clouds.push_back(Cloud {
+                art: 10,
+                pos_x: 128.0,
+                pos_y: self.rng.gen_range(0..128) as f32,
+                width: 1
+            });
+        }
     }
 }
 
-enum Directions {
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN,
-}
+
 enum Tiles {
-    Dirty = 1,
     Cat = 2,
-    Roomba = 3,
-    Clean = 7,
+    Enemy = 3,
+    Background1 = 0,
+    Background2 = 16,
+    Background3 = 17,
 }
 
 impl BBMicroGame for Game1 {
     fn init(&mut self, api: &mut BBMicroApi) {
         // Draw the base map on layer 0.
-        for x in 0..256 {
-            for y in 0..256 {
-                api.mset(x, y, 0, Tiles::Dirty as u8);
+        for x in 0..128 {
+            for y in 0..128 {
+                api.mset(x, y, 0, Tiles::Background1 as u8);
+                // let choice = self.rng.gen_range(0..10);
+                // if choice == 2 {
+                //     api.mset(x, y, 0, Tiles::Background2 as u8);
+                // }
             }
         }
 
@@ -116,19 +154,23 @@ impl BBMicroGame for Game1 {
     fn update(&mut self, api: &mut BBMicroApi) {
         if api.btn(Button::LEFT) {
             self.cat_x -= 2.0;
-            // self.roomba_x -= 2.0;
         }
         if api.btn(Button::RIGHT) {
             self.cat_x += 2.0;
-            // self.roomba_x += 2.0;
         }
         if api.btn(Button::UP) {
             self.cat_y -= 2.0;
-            // self.roomba_y -= 2.0;
         }
         if api.btn(Button::DOWN) {
             self.cat_y += 2.0;
-            // self.roomba_y += 2.0;
+        }
+
+        if api.btnp(Button::A) {
+            print!("pewpew\n");
+            self.bullets.push_back(Bullet {
+                pos_x: self.cat_x,
+                pos_y: self.cat_y,
+            })
         }
 
         let new_cat_pos = self.bound(self.cat_x, self.cat_y);
@@ -136,65 +178,94 @@ impl BBMicroGame for Game1 {
         self.cat_y = new_cat_pos.1;
 
         let cat_tile_position = self.get_tile_position((self.cat_x, self.cat_y));
-        let roomba_tile_pos = self.get_tile_position((self.roomba_x, self.roomba_y));
 
-        if roomba_tile_pos.0 >= 0
-            && roomba_tile_pos.0 < 256
-            && roomba_tile_pos.1 >= 0
-            && roomba_tile_pos.1 < 256
-        {
-            if api.mget(roomba_tile_pos.0, roomba_tile_pos.1, 0) == Tiles::Dirty as u8 {
-                api.mset(roomba_tile_pos.0, roomba_tile_pos.1, 0, Tiles::Clean as u8);
-                self.clean_count += 1;
-            }
-        }
-
-        if cat_tile_position.0 >= 0
-            && cat_tile_position.0 < 256
-            && cat_tile_position.1 >= 0
-            && cat_tile_position.1 < 256
-        {
-            if api.mget(cat_tile_position.0, cat_tile_position.1, 0) == Tiles::Clean as u8 {
-                api.mset(
-                    cat_tile_position.0,
-                    cat_tile_position.1,
-                    0,
-                    Tiles::Dirty as u8,
-                );
-                self.clean_count -= 1;
-            }
-        }
-
-        self.ai_move(api);
+        self.update_clouds();
+        self.update_gems();
+        self.update_bullets();
+        //update_gems();
+        //self.charge_bar += 1;
+        //api.mget(cat_tile_position.0, cat_tile_position.1, 0) == Tiles::Clean as u8
     }
+    
+    
 
     fn draw(&mut self, api: &mut BBMicroApi) {
         // Draw map layer 0.
         api.map(0, 0, 0.0, 0.0, 256, 256, 0);
 
-        api.spr(
-            Tiles::Cat as u8,
+        for cloud in self.clouds.iter_mut() {
+            api.spr_abs(
+                256,
+                0,
+                16,
+                50,
+                cloud.pos_x,
+                cloud.pos_y,
+                false,
+                false,
+            );
+        }
+        
+        for gem in self.gems.iter_mut() {
+            let mut anchor_y = 60;
+            if gem.hit {
+                anchor_y = anchor_y + 64 + gem.art
+            }
+            if(self.frame % 12 > 5){    
+                api.spr_abs(
+                    256,
+                    anchor_y.into(), 
+                    16,
+                    16,
+                    gem.pos_x,
+                    gem.pos_y,
+                    false,
+                    false,
+                );
+            } else { 
+                api.spr_abs(
+                    256 + (self.frame % 6 * 16),
+                    anchor_y.into(), 
+                    16,
+                    16,
+                    gem.pos_x,
+                    gem.pos_y,
+                    false,
+                    false,
+                );
+            }
+        }
+        
+        api.spr_abs(
+            8 + (self.frame % 8 * 32),
+            180,
+            16,
+            16,
             self.cat_x,
             self.cat_y,
-            8.0,
-            8.0,
             false,
             false,
         );
 
-        api.spr(
-            Tiles::Roomba as u8,
-            self.roomba_x,
-            self.roomba_y,
-            8.0,
-            8.0,
-            false,
-            false,
-        );
+        for bullet in self.bullets.iter_mut() {
+            api.spr_abs(
+                258,
+                53,
+                6,
+                16,    
+                bullet.pos_x,
+                bullet.pos_y,
+                false,
+                false,
+            );
+        }
+        
 
-        let clean_percent = (self.clean_count as f32) / (16.0 * 16.0);
+        let charge_percent = (self.charge_bar as f32) / 15.0;
 
         api.rect(105.0, 5.0, 105.0 + 20.0, 8.0, 3, true, true);
-        api.rect(105.0, 5.0, 105.0 + clean_percent * 20.0, 8.0, 2, true, true);
+        api.rect(105.0, 5.0, 105.0 + charge_percent * 20.0, 8.0, 2, true, true);
+
+        self.frame = self.frame + 1;
     }
 }
