@@ -4,14 +4,24 @@ use rand::rngs::ThreadRng;
 use rand::seq::SliceRandom;
 use rand::Rng;
 
+#[derive(Copy, Clone)]
 struct Point {
     x: f32,
     y: f32,
 }
 
+impl Point {
+    pub fn add(&self, other: &Point) -> Point {
+        Point {
+            x: other.x + self.x,
+            y: other.y + self.y
+        }
+    }
+}
+
 struct Heart {
     pt: Point,
-    color: Tiles,
+    color: u8,
 }
 
 #[derive(Copy, Clone)]
@@ -28,12 +38,12 @@ struct Enemy {
 pub struct Game1 {
     height: f32,
     width: f32,
-    cat_x: f32,
-    cat_y: f32,
+    cat_pt: Point,
     rng: ThreadRng,
     star_count: u32,
     hearts: Vec<Heart>,
     enemies: Vec<Enemy>,
+    color_spaces: Vec<u8>
 }
 
 impl Game1 {
@@ -41,13 +51,33 @@ impl Game1 {
         Game1 {
             height: 128.0,
             width: 128.0,
-            cat_x: 10.0,
-            cat_y: 10.0,
+            cat_pt: Point { x: 64.0, y: 80.0 },
             rng: rand::thread_rng(),
             star_count: 0,
             hearts: vec![],
             enemies: vec![],
+            color_spaces: vec![
+                Tiles::Red as u8,
+                Tiles::Orange as u8,
+                Tiles::Yellow as u8,
+                Tiles::Purple as u8,
+                Tiles::Blue as u8,
+                Tiles::Green as u8,
+                Tiles::Violet as u8,
+            ]
         }
+    }
+
+    fn get_tile_position(&mut self, position: Point) -> (u32, u32) {
+        ((position.x + 4.0) as u32 / 8, (position.y + 4.0) as u32 / 8)
+    }
+    
+    fn legal_move(&mut self, api: &mut BBMicroApi, p: Point) -> bool {
+        let tile_pos = self.get_tile_position(p);
+        if tile_pos.0 <= 0 {
+            return false;
+        }
+        self.color_spaces.contains(&api.mget(tile_pos.0, tile_pos.1, 0))
     }
 }
 
@@ -104,27 +134,54 @@ impl BBMicroGame for Game1 {
         api.music("bgm", 0, 0);
     }
 
+
     fn update(&mut self, api: &mut BBMicroApi) {
-        if api.btn(Button::LEFT) {
-            self.cat_x -= 2.0;
+        let mut mv_x  = Point {x: 0.0, y: 0.0};
+        let mut mv_y  = Point {x: 0.0, y: 0.0};
+        
+        if api.btn(Button::LEFT)  {
+            mv_x.x -= 2.0;
         }
         if api.btn(Button::RIGHT) {
-            self.cat_x += 2.0;
+           mv_x.x += 2.0;
         }
         if api.btn(Button::UP) {
-            self.cat_y -= 2.0;
+            mv_y.y -= 2.0;
         }
         if api.btn(Button::DOWN) {
-            self.cat_y += 2.0;
+            mv_y.y +=  2.0;
+        }
+
+        // First go right
+        if self.legal_move(api, self.cat_pt.add(&mv_x)) {
+            self.cat_pt = self.cat_pt.add(&mv_x)
+        }
+
+        if self.legal_move(api, self.cat_pt.add(&mv_y)) {
+            self.cat_pt = self.cat_pt.add(&mv_y)
+        }
+
+        let curr_point = self.get_tile_position(self.cat_pt);
+        let curr_color = api.mget(curr_point.0, curr_point.1, 0);
+        let heart_color: u8;
+        match curr_color{
+            13 => heart_color = 38,
+            14 => heart_color = 39,
+            15 => heart_color = 40,
+            31 => heart_color = 43,
+            30 => heart_color = 42,
+            29 => heart_color = 41,
+            45 => heart_color = 44,
+            _ => heart_color = 43,
         }
 
         if api.btnp(Button::A) {
             self.hearts.push(Heart {
                 pt: Point {
-                    x: self.cat_x,
-                    y: self.cat_y - 4.0,
+                    x: self.cat_pt.x,
+                    y: self.cat_pt.y - 4.0,
                 },
-                color: Tiles::RedHeart,
+                color: heart_color,
             })
         }
 
@@ -162,6 +219,8 @@ impl BBMicroGame for Game1 {
         for enemy in &mut self.enemies {
             enemy.pt.y += 4.0;
         }
+
+        
     }
 
     fn draw(&mut self, api: &mut BBMicroApi) {
@@ -220,8 +279,8 @@ impl BBMicroGame for Game1 {
 
         api.spr(
             Tiles::Cat as u8,
-            self.cat_x,
-            self.cat_y,
+            self.cat_pt.x,
+            self.cat_pt.y,
             8.0,
             8.0,
             false,
@@ -230,7 +289,7 @@ impl BBMicroGame for Game1 {
 
         for heart in &self.hearts {
             api.spr(
-                heart.color as u8,
+                heart.color,
                 heart.pt.x,
                 heart.pt.y,
                 8.0,
