@@ -28,11 +28,17 @@ impl Game1 {
     }
 }
 
+#[derive(Copy, Clone)]
 enum Tiles {
-    Dirty = 1,
     Cat = 2,
     Roomba = 3,
-    Clean = 7,
+    Red = 13,
+    Orange = 14,
+    Yellow = 15,
+    Purple = 31,
+    Blue = 30,
+    Green = 29,
+    Violet = 45,
 }
 
 impl BBMicroGame for Game1 {
@@ -40,8 +46,39 @@ impl BBMicroGame for Game1 {
         // Draw the base map on layer 0.
         for x in 0..256 {
             for y in 0..256 {
-                api.mset(x, y, 0, Tiles::Dirty as u8);
+                api.mset(x, y, 0, Tiles::Roomba as u8);
             }
+        }
+
+        for (i, color) in [
+            Tiles::Violet,
+            Tiles::Blue,
+            Tiles::Green,
+            Tiles::Yellow,
+            Tiles::Orange,
+            Tiles::Red,
+        ]
+        .iter()
+        .enumerate()
+        {
+            let i: u32 = i as u32;
+            api.mset(0, 15 - i, 0, *color as u8);
+            api.mset(1, 15 - i, 0, *color as u8);
+            api.mset(2, 14 - i, 0, *color as u8);
+            api.mset(3, 14 - i, 0, *color as u8);
+            api.mset(4, 13 - i, 0, *color as u8);
+            api.mset(5, 13 - i, 0, *color as u8);
+            api.mset(6, 12 - i, 0, *color as u8);
+            api.mset(7, 12 - i, 0, *color as u8);
+
+            api.mset(8, 12 - i, 0, *color as u8);
+            api.mset(9, 12 - i, 0, *color as u8);
+            api.mset(10, 13 - i, 0, *color as u8);
+            api.mset(11, 13 - i, 0, *color as u8);
+            api.mset(12, 14 - i, 0, *color as u8);
+            api.mset(13, 14 - i, 0, *color as u8);
+            api.mset(14, 15 - i, 0, *color as u8);
+            api.mset(15, 15 - i, 0, *color as u8);
         }
 
         api.music("bgm", 0, 0);
@@ -63,7 +100,7 @@ impl BBMicroGame for Game1 {
     }
 
     fn draw(&mut self, api: &mut BBMicroApi) {
-        api.camera(self.cat_x - 64.0 - 4.0, self.cat_y - 64.0 - 4.0);
+        //api.camera(self.cat_x - 64.0 - 4.0, self.cat_y - 64.0 - 4.0);
         // Draw map layer 0.
         api.map(0, 0, 0.0, 0.0, 256, 256, 0);
 
