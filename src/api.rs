@@ -188,7 +188,7 @@ impl<'a> BBMicroApi<'a> {
         texture_creator: &'a sdl2::render::TextureCreator<sdl2::video::WindowContext>,
     ) -> BBMicroApi<'a> {
         let sprites_texture = texture_creator
-            .load_texture("sprites.png")
+            .load_texture("../sprites_old.png")
             .expect("Couldn't load the texture");
         let font_texture = texture_creator
             .load_texture("font.png")
