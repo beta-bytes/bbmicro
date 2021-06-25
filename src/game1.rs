@@ -1,11 +1,17 @@
 use crate::api::{BBMicroApi, BBMicroGame, Button};
 
 use rand::rngs::ThreadRng;
+use rand::seq::SliceRandom;
 use rand::Rng;
 
 struct Point {
     x: f32,
     y: f32,
+}
+
+struct Heart {
+    pt: Point,
+    color: Tiles,
 }
 
 pub struct Game1 {
@@ -14,6 +20,7 @@ pub struct Game1 {
     cat_x: f32,
     cat_y: f32,
     rng: ThreadRng,
+    star_count: u32,
 }
 
 impl Game1 {
@@ -24,6 +31,7 @@ impl Game1 {
             cat_x: 10.0,
             cat_y: 10.0,
             rng: rand::thread_rng(),
+            star_count: 0,
         }
     }
 }
@@ -39,14 +47,80 @@ enum Tiles {
     Blue = 30,
     Green = 29,
     Violet = 45,
+    VioletRoomba = 60,
+    PurpleRoomba = 59,
+    GreenRoomaba = 58,
+    BlueRoomba = 57,
+    YellowRoomba = 56,
+    OrangeRoomba = 55,
+    RedRoomba = 54,
+    VioletHeart = 44,
+    PurpleHeart = 43,
+    BlueHeart = 42,
+    GreenHeart = 41,
+    YellowHeart = 40,
+    OrangeHeart = 39,
+    RedHeart = 38,
+    Star1 = 49,
+    Star2 = 50,
+    Star3 = 51,
+    Star4 = 52,
+    Star5 = 53,
 }
 
 impl BBMicroGame for Game1 {
     fn init(&mut self, api: &mut BBMicroApi) {
         // Draw the base map on layer 0.
-        for x in 0..256 {
-            for y in 0..256 {
-                api.mset(x, y, 0, Tiles::Roomba as u8);
+        for x in 0..16 {
+            for y in 0..16 {
+                let choice = [
+                    Tiles::Star1,
+                    Tiles::Star2,
+                    Tiles::Star3,
+                    Tiles::Star4,
+                    Tiles::Star5,
+                ]
+                .choose(&mut self.rng)
+                .unwrap();
+                api.mset(x, y, 0, *choice as u8);
+            }
+        }
+
+        api.music("bgm", 0, 0);
+    }
+
+    fn update(&mut self, api: &mut BBMicroApi) {
+        if api.btn(Button::LEFT) {
+            self.cat_x -= 2.0;
+        }
+        if api.btn(Button::RIGHT) {
+            self.cat_x += 2.0;
+        }
+        if api.btn(Button::UP) {
+            self.cat_y -= 2.0;
+        }
+        if api.btn(Button::DOWN) {
+            self.cat_y += 2.0;
+        }
+    }
+
+    fn draw(&mut self, api: &mut BBMicroApi) {
+        // Set the tiles behind.
+        for x in 0..16 {
+            for y in 0..16 {
+                let chance: f32 = self.rng.gen();
+                if chance > 0.95 {
+                    let choice = [
+                        Tiles::Star1,
+                        Tiles::Star2,
+                        Tiles::Star3,
+                        Tiles::Star4,
+                        Tiles::Star5,
+                    ]
+                    .choose(&mut self.rng)
+                    .unwrap();
+                    api.mset(x, y, 0, *choice as u8);
+                }
             }
         }
 
@@ -81,25 +155,6 @@ impl BBMicroGame for Game1 {
             api.mset(15, 15 - i, 0, *color as u8);
         }
 
-        api.music("bgm", 0, 0);
-    }
-
-    fn update(&mut self, api: &mut BBMicroApi) {
-        if api.btn(Button::LEFT) {
-            self.cat_x -= 2.0;
-        }
-        if api.btn(Button::RIGHT) {
-            self.cat_x += 2.0;
-        }
-        if api.btn(Button::UP) {
-            self.cat_y -= 2.0;
-        }
-        if api.btn(Button::DOWN) {
-            self.cat_y += 2.0;
-        }
-    }
-
-    fn draw(&mut self, api: &mut BBMicroApi) {
         //api.camera(self.cat_x - 64.0 - 4.0, self.cat_y - 64.0 - 4.0);
         // Draw map layer 0.
         api.map(0, 0, 0.0, 0.0, 256, 256, 0);
