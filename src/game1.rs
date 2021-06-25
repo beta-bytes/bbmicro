@@ -14,6 +14,17 @@ struct Heart {
     color: Tiles,
 }
 
+#[derive(Copy, Clone)]
+enum EnemyAI {
+    Straight = 0,
+}
+
+struct Enemy {
+    pt: Point,
+    color: Tiles,
+    ai: EnemyAI,
+}
+
 pub struct Game1 {
     height: f32,
     width: f32,
@@ -21,6 +32,8 @@ pub struct Game1 {
     cat_y: f32,
     rng: ThreadRng,
     star_count: u32,
+    hearts: Vec<Heart>,
+    enemies: Vec<Enemy>,
 }
 
 impl Game1 {
@@ -32,6 +45,8 @@ impl Game1 {
             cat_y: 10.0,
             rng: rand::thread_rng(),
             star_count: 0,
+            hearts: vec![],
+            enemies: vec![],
         }
     }
 }
@@ -49,7 +64,7 @@ enum Tiles {
     Violet = 45,
     VioletRoomba = 60,
     PurpleRoomba = 59,
-    GreenRoomaba = 58,
+    GreenRoomba = 58,
     BlueRoomba = 57,
     YellowRoomba = 56,
     OrangeRoomba = 55,
@@ -101,6 +116,51 @@ impl BBMicroGame for Game1 {
         }
         if api.btn(Button::DOWN) {
             self.cat_y += 2.0;
+        }
+
+        if api.btnp(Button::A) {
+            self.hearts.push(Heart {
+                pt: Point {
+                    x: self.cat_x,
+                    y: self.cat_y - 4.0,
+                },
+                color: Tiles::RedHeart,
+            })
+        }
+
+        for heart in &mut self.hearts {
+            heart.pt.y -= 4.0;
+        }
+
+        // Spawn Enemies
+        let chance: f32 = self.rng.gen();
+        if chance > 0.5 {
+            // Spawn an enemy
+            let choice = [
+                Tiles::BlueRoomba,
+                Tiles::RedRoomba,
+                Tiles::GreenRoomba,
+                Tiles::YellowRoomba,
+                Tiles::PurpleRoomba,
+                Tiles::VioletRoomba,
+            ]
+            .choose(&mut self.rng)
+            .unwrap();
+
+            let ai_choice = [EnemyAI::Straight].choose(&mut self.rng).unwrap();
+
+            self.enemies.push(Enemy {
+                pt: Point {
+                    x: self.rng.gen::<f32>() * 128.0,
+                    y: -1.0 as f32,
+                },
+                ai: *ai_choice,
+                color: *choice,
+            });
+        }
+
+        for enemy in &mut self.enemies {
+            enemy.pt.y += 4.0;
         }
     }
 
@@ -155,7 +215,6 @@ impl BBMicroGame for Game1 {
             api.mset(15, 15 - i, 0, *color as u8);
         }
 
-        //api.camera(self.cat_x - 64.0 - 4.0, self.cat_y - 64.0 - 4.0);
         // Draw map layer 0.
         api.map(0, 0, 0.0, 0.0, 256, 256, 0);
 
@@ -168,5 +227,29 @@ impl BBMicroGame for Game1 {
             false,
             false,
         );
+
+        for heart in &self.hearts {
+            api.spr(
+                heart.color as u8,
+                heart.pt.x,
+                heart.pt.y,
+                8.0,
+                8.0,
+                false,
+                false,
+            );
+        }
+
+        for enemy in &self.enemies {
+            api.spr(
+                enemy.color as u8,
+                enemy.pt.x,
+                enemy.pt.y,
+                8.0,
+                8.0,
+                false,
+                false,
+            );
+        }
     }
 }
