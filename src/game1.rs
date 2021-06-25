@@ -14,7 +14,7 @@ impl Point {
     pub fn add(&self, other: &Point) -> Point {
         Point {
             x: other.x + self.x,
-            y: other.y + self.y
+            y: other.y + self.y,
         }
     }
 }
@@ -43,7 +43,7 @@ pub struct Game1 {
     star_count: u32,
     hearts: Vec<Heart>,
     enemies: Vec<Enemy>,
-    color_spaces: Vec<u8>
+    color_spaces: Vec<u8>,
 }
 
 impl Game1 {
@@ -64,20 +64,21 @@ impl Game1 {
                 Tiles::Blue as u8,
                 Tiles::Green as u8,
                 Tiles::Violet as u8,
-            ]
+            ],
         }
     }
 
     fn get_tile_position(&mut self, position: Point) -> (u32, u32) {
         ((position.x + 4.0) as u32 / 8, (position.y + 4.0) as u32 / 8)
     }
-    
+
     fn legal_move(&mut self, api: &mut BBMicroApi, p: Point) -> bool {
         let tile_pos = self.get_tile_position(p);
         if tile_pos.0 <= 0 {
             return false;
         }
-        self.color_spaces.contains(&api.mget(tile_pos.0, tile_pos.1, 0))
+        self.color_spaces
+            .contains(&api.mget(tile_pos.0, tile_pos.1, 0))
     }
 }
 
@@ -134,22 +135,21 @@ impl BBMicroGame for Game1 {
         api.music("bgm", 0, 0);
     }
 
-
     fn update(&mut self, api: &mut BBMicroApi) {
-        let mut mv_x  = Point {x: 0.0, y: 0.0};
-        let mut mv_y  = Point {x: 0.0, y: 0.0};
-        
-        if api.btn(Button::LEFT)  {
+        let mut mv_x = Point { x: 0.0, y: 0.0 };
+        let mut mv_y = Point { x: 0.0, y: 0.0 };
+
+        if api.btn(Button::LEFT) {
             mv_x.x -= 2.0;
         }
         if api.btn(Button::RIGHT) {
-           mv_x.x += 2.0;
+            mv_x.x += 2.0;
         }
         if api.btn(Button::UP) {
             mv_y.y -= 2.0;
         }
         if api.btn(Button::DOWN) {
-            mv_y.y +=  2.0;
+            mv_y.y += 2.0;
         }
 
         // First go right
@@ -164,7 +164,7 @@ impl BBMicroGame for Game1 {
         let curr_point = self.get_tile_position(self.cat_pt);
         let curr_color = api.mget(curr_point.0, curr_point.1, 0);
         let heart_color: u8;
-        match curr_color{
+        match curr_color {
             13 => heart_color = 38,
             14 => heart_color = 39,
             15 => heart_color = 40,
@@ -219,8 +219,6 @@ impl BBMicroGame for Game1 {
         for enemy in &mut self.enemies {
             enemy.pt.y += 4.0;
         }
-
-        
     }
 
     fn draw(&mut self, api: &mut BBMicroApi) {
@@ -288,15 +286,7 @@ impl BBMicroGame for Game1 {
         );
 
         for heart in &self.hearts {
-            api.spr(
-                heart.color,
-                heart.pt.x,
-                heart.pt.y,
-                8.0,
-                8.0,
-                false,
-                false,
-            );
+            api.spr(heart.color, heart.pt.x, heart.pt.y, 8.0, 8.0, false, false);
         }
 
         for enemy in &self.enemies {
