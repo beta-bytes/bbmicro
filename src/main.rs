@@ -41,7 +41,7 @@ fn main() -> Result<(), String> {
 
     // Setup window.
     let window = video_subsystem
-        .window("BBMicro", 640, 480)
+        .window("BBMicro", 2*640, 2*640)
         .position_centered()
         .build()
         .map_err(|e| e.to_string())?;
