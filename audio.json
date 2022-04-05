@@ -1,9 +1,5 @@
 {
     "music": [
-        {
-            "name": "bgm",
-            "path": "music.mp3"
-        }
     ],
     "sfx": [
         {

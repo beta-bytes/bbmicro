@@ -7,7 +7,6 @@ use sdl2::mixer::{AUDIO_S16LSB, DEFAULT_CHANNELS};
 use sdl2::pixels;
 use sdl2::rect::Rect;
 
-
 use serde::Deserialize;
 
 use std::collections::HashMap;
@@ -121,11 +120,12 @@ struct DrawState {
 }
 
 pub struct BBMicroApi<'a> {
+    kaimerra: Kaimerra,
     canvas: &'a mut sdl2::render::WindowCanvas,
     texture_creator: &'a sdl2::render::TextureCreator<sdl2::video::WindowContext>,
     sprites_texture: sdl2::render::Texture<'a>,
     font_texture: sdl2::render::Texture<'a>,
-    sfx: HashMap<String,sdl2::mixer::Chunk>,
+    sfx: HashMap<String, sdl2::mixer::Chunk>,
     music: HashMap<String, sdl2::mixer::Music<'a>>,
     font_entries: HashMap<char, FontEntry>,
     draw_state: DrawState,
@@ -162,17 +162,16 @@ fn load_font() -> Result<HashMap<char, FontEntry>, Box<dyn Error>> {
     Ok(font_entries)
 }
 
-
 #[derive(Deserialize, Debug)]
 struct AudioConfig {
     music: Vec<AudioEntry>,
-    sfx: Vec<AudioEntry>
+    sfx: Vec<AudioEntry>,
 }
 
 #[derive(Deserialize, Debug)]
 struct AudioEntry {
     path: String,
-    name: String
+    name: String,
 }
 
 fn load_audio() -> Result<AudioConfig, Box<dyn Error>> {
@@ -202,15 +201,22 @@ impl<'a> BBMicroApi<'a> {
 
         let mut music = HashMap::new();
         for musicName in audio_entries.music {
-            music.insert(musicName.name, sdl2::mixer::Music::from_file(musicName.path).expect("Missing music files"));
+            music.insert(
+                musicName.name,
+                sdl2::mixer::Music::from_file(musicName.path).expect("Missing music files"),
+            );
         }
 
         let mut sfx = HashMap::new();
         for sfxName in audio_entries.sfx {
-            sfx.insert(sfxName.name, sdl2::mixer::Chunk::from_file(sfxName.path).expect("Missing wav files"));
+            sfx.insert(
+                sfxName.name,
+                sdl2::mixer::Chunk::from_file(sfxName.path).expect("Missing wav files"),
+            );
         }
 
         BBMicroApi {
+            kaimerra: Kaimerra::new(),
             canvas: canvas,
             texture_creator: texture_creator,
             sprites_texture: sprites_texture,
@@ -278,6 +284,10 @@ impl<'a> BBMicroApi<'a> {
 
     pub fn color(&mut self, col: Color) {
         self.draw_state.pen = col;
+    }
+
+    pub fn get_counter(&mut self, counter: &str) -> Option<i64> {
+        self.kaimerra.get_counter(counter.to_string())
     }
 
     pub fn spr(&mut self, n: u8, x: f32, y: f32, w: f32, h: f32, flip_x: bool, flip_y: bool) {
@@ -419,34 +429,30 @@ impl<'a> BBMicroApi<'a> {
     pub fn sfx(&mut self, audio: &str, channel: i32, offset: u32, length: u32) {
         //TODO offset and length unused
         match self.sfx.get(audio) {
-            Some(audio) => {
-                match sdl2::mixer::Channel(channel).play(&audio, 0) {
-                    Ok(_) => {
-                        print!("Success!\n");
-                    },
-                    Err(err) => {
-                        print!("{}", &err);
-                    }
+            Some(audio) => match sdl2::mixer::Channel(channel).play(&audio, 0) {
+                Ok(_) => {
+                    print!("Success!\n");
                 }
-            }
-            None => print!("no sfx found")
+                Err(err) => {
+                    print!("{}", &err);
+                }
+            },
+            None => print!("no sfx found"),
         }
     }
 
     pub fn music(&mut self, audio: &str, fadems: u32, channelmask: u32) {
         //TODO fadems and channelmask unused
         match &self.music.get(audio) {
-            Some(audio) => {
-                match audio.play(-1) {
-                    Ok(_) => {
-                        print!("Success!\n");
-                    },
-                    Err(err) => {
-                        print!("{}", &err);
-                    }
+            Some(audio) => match audio.play(-1) {
+                Ok(_) => {
+                    print!("Success!\n");
                 }
-            }
-            None => print!("no music found")
+                Err(err) => {
+                    print!("{}", &err);
+                }
+            },
+            None => print!("no music found"),
         }
     }
 }
@@ -455,4 +461,70 @@ pub trait BBMicroGame {
     fn init(&mut self, api: &mut BBMicroApi);
     fn update(&mut self, api: &mut BBMicroApi);
     fn draw(&mut self, api: &mut BBMicroApi);
+}
+
+use reqwest::header::CONTENT_TYPE;
+
+#[derive(Deserialize, Debug)]
+struct GetCountersResponse {
+    result: HashMap<String, i64>,
+}
+
+struct Kaimerra {
+    client: reqwest::blocking::Client,
+    clientId: String,
+}
+
+impl Kaimerra {
+    pub fn new() -> Kaimerra {
+        let client = reqwest::blocking::Client::new();
+        let mut map = HashMap::new();
+        map.insert("command", "register");
+
+        let res = client
+            .post("http://localhost:3002/rpc")
+            .header(CONTENT_TYPE, "application/json")
+            .json(&map)
+            .send()
+            .unwrap();
+
+        let json = res.json::<HashMap<String, String>>().unwrap();
+
+        let kai = Kaimerra {
+            client: client,
+            clientId: json.get("clientId").unwrap().clone(),
+        };
+        // force an initial read of get_counters
+        println!("HELLO FRO MTHE BEGINNING");
+        println!("{:?}", kai.get_counters());
+
+        kai
+    }
+
+    pub fn get_counter(&self, counter: String) -> Option<i64> {
+        let counters = self.get_counters();
+
+        println!("{:?}", counters);
+
+        match counters.result.get(&counter) {
+            Some(x) => Some(*x),
+            None => None,
+        }
+    }
+
+    pub fn get_counters(&self) -> GetCountersResponse {
+        let mut map = HashMap::new();
+        map.insert("clientId", self.clientId.as_str());
+        map.insert("command", "getCounters");
+
+        let res = self
+            .client
+            .post("http://localhost:3002/rpc")
+            .header(CONTENT_TYPE, "application/json")
+            .json(&map)
+            .send()
+            .unwrap();
+
+        res.json::<GetCountersResponse>().unwrap()
+    }
 }

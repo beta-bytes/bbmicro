@@ -39,7 +39,7 @@ enum Tiles {
     WaterBR = 33,
     WaterL = 34,
     WaterR = 19,
-    Bird = 2
+    Bird = 2,
 }
 
 impl BBMicroGame for Game1 {
@@ -75,7 +75,6 @@ impl BBMicroGame for Game1 {
     }
 
     fn update(&mut self, api: &mut BBMicroApi) {
-
         self.count += 1;
 
         if self.count > 100 {
@@ -99,12 +98,12 @@ impl BBMicroGame for Game1 {
             goomba.x += self.rng.gen_range(-1.0..1.0);
             goomba.y += self.rng.gen_range(-1.0..1.0);
 
-            if((goomba.x -self.x).abs() < 3.0 && (goomba.y -self.y).abs() < 3.0) {
-                api.sfx("ghost",1,0,0);
+            if ((goomba.x - self.x).abs() < 3.0 && (goomba.y - self.y).abs() < 3.0) {
+                api.sfx("ghost", 1, 0, 0);
                 self.deadgoombas.push(Goomba {
                     id: goomba.id,
                     x: goomba.x,
-                    y: goomba.y
+                    y: goomba.y,
                 });
             }
         }
@@ -114,7 +113,6 @@ impl BBMicroGame for Game1 {
                 self.goombas.remove(pos);
             }
         }
-
     }
 
     fn draw(&mut self, api: &mut BBMicroApi) {
@@ -135,6 +133,14 @@ impl BBMicroGame for Game1 {
 
         // Draw map layer 1.
         api.map(0, 0, 0.0, 0.0, 256, 256, 1);
+
+        let counter = match api.get_counter("fire") {
+            Some(x) => x % 100,
+            None => 4,
+        };
+
+        // draw
+        api.spr(counter as u8, 10.0, 10.0, 100.0, 100.0, false, false);
 
         //Draw dead gooombas
         for goomba in &self.deadgoombas {
