@@ -1,21 +1,24 @@
 use crate::api::{BBMicroApi, BBMicroGame, Button};
 
-pub struct Goomba {
-    id: u32,
+pub struct StopLight {
+    top: u8,
+    bott: u8,
     x: f32,
     y: f32,
 }
 
 pub struct Game1 {
     count: u32,
-    x:f32,
-    y:f32,
+    x: f32,
+    y: f32,
     p1x: f32,
     p1y:f32,
     p2x:f32,
     p2y: f32,
     p1w: bool,
     p2w: bool,
+    stop_light: StopLight,
+    green_light: bool
 }
 
 impl Game1 {
@@ -30,6 +33,14 @@ impl Game1 {
             p2y:100.0,
             p1w:false,
             p2w: false,
+            stop_light: 
+                StopLight{
+                    top: Tiles::RDTop as u8,
+                    bott: Tiles::RDBott as u8,
+                    x: 100.0,
+                    y: 52.0
+                },
+            green_light: false,
         }
     }
 }
@@ -37,6 +48,10 @@ impl Game1 {
 enum Tiles {
     FinishLine = 68,
     Grass = 48,
+    RDTop = 64,
+    RDBott = 80,
+    GrTop = 65,
+    GRBott = 81
 }
 
 impl BBMicroGame for Game1 {
@@ -67,6 +82,18 @@ impl BBMicroGame for Game1 {
                 self.p2w = true;
             }
         }
+        if api.btn(Button::A) {
+            self.green_light = true;
+        }
+        if api.btn(Button::B) {
+            self.green_light = false;
+        }
+
+        self.stop_light.top = if self.green_light {Tiles::GrTop as u8} else {Tiles::RDTop as u8};
+        self.stop_light.bott = if self.green_light {Tiles::GRBott as u8} else {Tiles::RDBott as u8};
+
+        self.stop_light.x = self.x;
+        self.stop_light.y = self.y - 48.0;
     }
 
     fn draw(&mut self, api: &mut BBMicroApi) {
@@ -89,6 +116,9 @@ impl BBMicroGame for Game1 {
         api.mset(20, 11, 0, Tiles::FinishLine as u8);
         api.mset(20, 13, 0, Tiles::FinishLine as u8);
         api.mset(20, 12, 0, Tiles::FinishLine as u8);
+
+        api.spr(self.stop_light.top, self.stop_light.x, self.stop_light.y, 8.0, 8.0, false, false);
+        api.spr(self.stop_light.bott, self.stop_light.x, self.stop_light.y + 8.0, 8.0, 8.0, false, false);
 
         // Draw map layer 1.
         api.map(80, 0, 0.0, 0.0, 256, 256, 1);
