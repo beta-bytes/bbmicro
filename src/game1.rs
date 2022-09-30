@@ -48,6 +48,7 @@ impl Game1 {
 enum Tiles {
     FinishLine = 68,
     Grass = 48,
+    Startline=71,
     RDTop = 64,
     RDBott = 80,
     GrTop = 65,
@@ -69,14 +70,14 @@ impl BBMicroGame for Game1 {
 
     fn update(&mut self, api: &mut BBMicroApi) {
         if api.btn(Button::RIGHT) {
-            if self.p1x < 200.0{
+            if self.p1x < 215.0{
                 self.p1x += 2.0;
             }else{
                 self.p1w = true;
         }
     }
         if api.btn(Button::D){
-            if self.p2x < 200.0 {
+            if self.p2x < 215.0 {
                 self.p2x += 2.0;
             }else{
                 self.p2w = true;
@@ -119,6 +120,12 @@ impl BBMicroGame for Game1 {
 
         api.spr(self.stop_light.top, self.stop_light.x, self.stop_light.y, 8.0, 8.0, false, false);
         api.spr(self.stop_light.bott, self.stop_light.x, self.stop_light.y + 8.0, 8.0, 8.0, false, false);
+
+        //Draw start line
+        api.mset(5, 10, 0, Tiles::Startline as u8);
+        api.mset(5, 11, 0, Tiles::Startline as u8);
+        api.mset(5, 13, 0, Tiles::Startline as u8);
+        api.mset(5, 12, 0, Tiles::Startline as u8);
 
         // Draw map layer 1.
         api.map(80, 0, 0.0, 0.0, 256, 256, 1);
