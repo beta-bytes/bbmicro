@@ -1,8 +1,5 @@
 use crate::api::{BBMicroApi, BBMicroGame, Button};
 
-use rand::rngs::ThreadRng;
-use rand::Rng;
-
 pub struct Goomba {
     id: u32,
     x: f32,
@@ -17,6 +14,8 @@ pub struct Game1 {
     p1y:f32,
     p2x:f32,
     p2y: f32,
+    p1w: bool,
+    p2w: bool,
 }
 
 impl Game1 {
@@ -28,33 +27,26 @@ impl Game1 {
             p1x: 100.0,
             p1y: 100.0,
             p2x: 100.0,
-            p2y:100.0
+            p2y:100.0,
+            p1w:false,
+            p2w: false,
         }
     }
 }
 
 enum Tiles {
+    FinishLine = 68,
     Grass = 48,
-    WaterTL = 16,
-    WaterTR = 17,
-    WaterBL = 32,
-    WaterBR = 33,
-    WaterL = 34,
-    WaterR = 19,
-    Bird = 2
 }
 
 impl BBMicroGame for Game1 {
     fn init(&mut self, api: &mut BBMicroApi) {
         // Draw the base map on layer 0.
         for x in 0..256 {
-            for y in 0..15 {
+            for y in 0..16 {
                 api.mset(x, y, 0, Tiles::Grass as u8);
             }
         }
-
-        // Draw on layer 1 a bird.
-        //api.mset(15, 0, 1, Tiles::Bird as u8);
 
         //Play BGM
         api.music("bgm", 0,0); //Uncomment after adding music.mp3
@@ -62,10 +54,18 @@ impl BBMicroGame for Game1 {
 
     fn update(&mut self, api: &mut BBMicroApi) {
         if api.btn(Button::RIGHT) {
-            self.p1x += 2.0;
+            if self.p1x < 200.0{
+                self.p1x += 2.0;
+            }else{
+                self.p1w = true;
         }
+    }
         if api.btn(Button::D){
-            self.p2x += 2.0;
+            if self.p2x < 200.0 {
+                self.p2x += 2.0;
+            }else{
+                self.p2w = true;
+            }
         }
     }
 
@@ -75,22 +75,29 @@ impl BBMicroGame for Game1 {
         // Draw map layer 0.
         api.map(0, 0, 0.0, 0.0, 256, 256, 0);
 
-        let spr = 1;
+        let spr1 = 8;
+        let spr2 = 9;
 
         api.rect(10.0, 10.0, 20.0, 20.0, 1);
 
         //Makes sprites
-        api.spr(spr, self.p1x - 60.0, self.p1y, 8.0, 8.0, false, false);
-        api.spr(spr, self.p2x - 60.0, self.p2y-20.0, 8.0, 8.0, false, false);
+        api.spr(spr1, self.p1x - 60.0, self.p1y, 8.0, 8.0, false, false);
+        api.spr(spr2, self.p2x - 60.0, self.p2y-20.0, 8.0, 8.0, false, false);
+
+        //Draw finish line
+        api.mset(20, 10, 0, Tiles::FinishLine as u8);
+        api.mset(20, 11, 0, Tiles::FinishLine as u8);
+        api.mset(20, 13, 0, Tiles::FinishLine as u8);
+        api.mset(20, 12, 0, Tiles::FinishLine as u8);
 
         // Draw map layer 1.
-        api.map(0, 0, 0.0, 0.0, 256, 256, 1);
+        api.map(80, 0, 0.0, 0.0, 256, 256, 1);
 
-        //Draw dead gooombas
-        /* for goomba in &self.deadgoombas {
-            api.spr(9, goomba.x, goomba.y, 8.0, 8.0, false, false);
-        } */
-
-        //api.print("HELLO BETABYTES!", 5.0, 5.0, false);
+        if self.p1w == true{
+            api.print("PLAYER ONE WINS", 5.0, 5.0, false);
+        }else if self.p2w == true {
+            api.print("PLAYER TWO WINS", 5.0, 5.0, false);
+        }
+        
     }
 }
