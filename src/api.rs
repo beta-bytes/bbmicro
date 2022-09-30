@@ -69,6 +69,7 @@ pub enum Button {
     DOWN,
     A,
     B,
+    D,
 }
 
 pub struct InputState {
@@ -89,6 +90,9 @@ pub struct InputState {
 
     pub b_down: bool,
     pub b_pressed: bool,
+
+    pub d_down: bool,
+    pub d_pressed: bool,
 }
 
 impl InputState {
@@ -110,6 +114,9 @@ impl InputState {
 
             b_down: false,
             b_pressed: false,
+
+            d_down: false,
+            d_pressed: false,
         }
     }
 }
@@ -355,6 +362,7 @@ impl<'a> BBMicroApi<'a> {
             Button::DOWN => self.input_state.down_down,
             Button::A => self.input_state.a_down,
             Button::B => self.input_state.b_down,
+            Button::D=>self.input_state.d_down,
         }
     }
 
@@ -367,6 +375,7 @@ impl<'a> BBMicroApi<'a> {
             Button::DOWN => self.input_state.down_pressed,
             Button::A => self.input_state.a_pressed,
             Button::B => self.input_state.b_pressed,
+            Button::D => self.input_state.d_pressed,
         }
     }
 
