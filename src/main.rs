@@ -93,6 +93,7 @@ fn main() -> Result<(), String> {
                         Keycode::Right => input_state.right_pressed = true,
                         Keycode::A => input_state.a_pressed = true,
                         Keycode::B => input_state.b_pressed = true,
+                        Keycode::D => input_state.d_pressed = true,
                         _ => {}
                     };
                 }
@@ -124,6 +125,9 @@ fn main() -> Result<(), String> {
         }
         if keys.contains(&Keycode::B) {
             input_state.b_down = true;
+        }
+        if keys.contains(&Keycode::D) {
+            input_state.d_down = true;
         }
 
         api.update_input(input_state);
