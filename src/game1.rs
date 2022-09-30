@@ -3,20 +3,29 @@ use crate::api::{BBMicroApi, BBMicroGame, Button};
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
-pub struct Goomba {
-    id: u32,
+// pub struct Goomba {
+//     id: u32,
+//     x: f32,
+//     y: f32,
+// }
+
+pub struct StopLight {
+    top: u8,
+    bott: u8,
     x: f32,
     y: f32,
 }
 
 pub struct Game1 {
     count: u32,
-    x:f32,
-    y:f32,
+    x: f32,
+    y: f32,
     p1x: f32,
     p1y:f32,
     p2x:f32,
     p2y: f32,
+    stop_light: StopLight,
+    green_light: bool
 }
 
 impl Game1 {
@@ -28,7 +37,15 @@ impl Game1 {
             p1x: 100.0,
             p1y: 100.0,
             p2x: 100.0,
-            p2y:100.0
+            p2y:100.0,
+            stop_light: 
+                StopLight{
+                    top: Tiles::RDTop as u8,
+                    bott: Tiles::RDBott as u8,
+                    x: 100.0,
+                    y: 52.0
+                },
+            green_light: false,
         }
     }
 }
@@ -41,7 +58,11 @@ enum Tiles {
     WaterBR = 33,
     WaterL = 34,
     WaterR = 19,
-    Bird = 2
+    Bird = 2,
+    RDTop = 64,
+    RDBott = 80,
+    GrTop = 65,
+    GRBott = 81
 }
 
 impl BBMicroGame for Game1 {
@@ -67,6 +88,18 @@ impl BBMicroGame for Game1 {
         if api.btn(Button::D){
             self.p2x += 2.0;
         }
+        if api.btn(Button::A) {
+            self.green_light = true;
+        }
+        if api.btn(Button::B) {
+            self.green_light = false;
+        }
+
+        self.stop_light.top = if self.green_light {Tiles::GrTop as u8} else {Tiles::RDTop as u8};
+        self.stop_light.bott = if self.green_light {Tiles::GRBott as u8} else {Tiles::RDBott as u8};
+
+        self.stop_light.x = self.x;
+        self.stop_light.y = self.y - 48.0;
     }
 
     fn draw(&mut self, api: &mut BBMicroApi) {
@@ -83,14 +116,10 @@ impl BBMicroGame for Game1 {
         api.spr(spr, self.p1x - 60.0, self.p1y, 8.0, 8.0, false, false);
         api.spr(spr, self.p2x - 60.0, self.p2y-20.0, 8.0, 8.0, false, false);
 
+        api.spr(self.stop_light.top, self.stop_light.x, self.stop_light.y, 8.0, 8.0, false, false);
+        api.spr(self.stop_light.bott, self.stop_light.x, self.stop_light.y + 8.0, 8.0, 8.0, false, false);
+
         // Draw map layer 1.
         api.map(0, 0, 0.0, 0.0, 256, 256, 1);
-
-        //Draw dead gooombas
-        /* for goomba in &self.deadgoombas {
-            api.spr(9, goomba.x, goomba.y, 8.0, 8.0, false, false);
-        } */
-
-        //api.print("HELLO BETABYTES!", 5.0, 5.0, false);
     }
 }
